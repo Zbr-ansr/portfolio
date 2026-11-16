@@ -50,40 +50,15 @@
   var boost = 0, FADE = 700, MAXBOOST = 0.008, drag = null, justDragged = false;
   var hot = -1, pressed = -1, lift = cards.map(function () { return 1; }); /* hover lift / press per card */
 
-  /* Curve the cards: keep one hidden copy for size, then N clipped copies ("strips"),
-     each showing one vertical slice, turned a few degrees more than the last. */
-  var STRIPS = 8, BEND = 56; /* total bend across a card, in degrees */
   cards.forEach(function (c) {
     var title = c.querySelector("b"), desc = c.querySelector(".gdesc");
     c.setAttribute("aria-label", title.textContent + (desc ? ", " + desc.textContent : ""));
-    var face = document.createElement("span");
-    face.className = "gface";
-    while (c.firstChild) face.appendChild(c.firstChild);
-    var sizer = face.cloneNode(true);
-    sizer.className = "gface sizer";
-    var bend = document.createElement("span");
-    bend.className = "bend";
-    for (var i = 0; i < STRIPS; i++) {
-      var st = document.createElement("span");
-      st.className = "strip";
-      st.style.setProperty("--i", i);
-      st.style.setProperty("--a", ((i - (STRIPS - 1) / 2) * BEND / STRIPS).toFixed(2) + "deg");
-      st.appendChild(face.cloneNode(true));
-      bend.appendChild(st);
-    }
-    sizer.setAttribute("aria-hidden", "true");
-    bend.setAttribute("aria-hidden", "true");
-    c.appendChild(sizer);
-    c.appendChild(bend);
-    c.style.setProperty("--n", STRIPS);
-    c.classList.add("curved");
   });
 
   function measure() {
     var narrow = window.innerWidth < 600;
     if (!ringOn) { ringOn = true; orbit.classList.add("is-ring"); orbit.parentNode.classList.add("fixed"); }
     orbit.classList.toggle("compact", narrow);
-    cards.forEach(function (c) { c.style.setProperty("--cw", c.offsetWidth + "px"); });
     var w = portrait.clientWidth, h = portrait.clientHeight;
     /* hug the head, but keep the side cards mostly inside the page */
     R = Math.min(w * 0.75, orbit.clientWidth / 2 - (narrow ? 50 : 120));
@@ -108,9 +83,7 @@
       c.style.transform = "translate(calc(-50% + " + x.toFixed(1) + "px),calc(-50% + " + (cy + y).toFixed(1) + "px)) perspective(600px) rotateZ(" +
         lean.toFixed(1) + "deg) rotateY(" + (30 * Math.sin(2 * th)).toFixed(1) + "deg) scale(" + s.toFixed(3) + ")";
       c.style.zIndex = front ? (i === hot ? 4 : 3) : 1;
-      c.style.setProperty("--op", front ? 1 : 0.7);
-      var b = Math.max(-1, Math.min(1, sn * 3)); /* nearly flat as it passes the side; never 0, CSS divides by it */
-      c.style.setProperty("--bend", (Math.abs(b) < 0.04 ? (front ? 0.04 : -0.04) : b).toFixed(3));
+      c.style.opacity = front ? 1 : 0.75;
       c.classList.toggle("back", !front);
     }
   }
